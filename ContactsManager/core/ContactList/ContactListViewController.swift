@@ -1,3 +1,11 @@
+//
+//  ContactListViewController.swift
+//  ContactsManager
+//
+//  Created by Daniel Esteban Alcantara on 31/10/26.
+//
+
+
 import UIKit
 
 class ContactListViewController: UIViewController {
@@ -5,6 +13,7 @@ class ContactListViewController: UIViewController {
     @IBOutlet weak var searchBar: UISearchBar!
 
     private let model = ContactListModel()
+    private var contactCountBeforeForm: Int?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -14,6 +23,14 @@ class ContactListViewController: UIViewController {
         )
         searchBar.delegate = self
         setUpTableView()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if let previousCount = contactCountBeforeForm, contacts.count > previousCount {
+            searchBar.text = ""
+        }
+        contactCountBeforeForm = nil
         updateContacts()
     }
 
@@ -40,7 +57,7 @@ class ContactListViewController: UIViewController {
             return
         }
         let message = UILabel()
-        message.text = model.contacts.isEmpty
+        message.text = contacts.isEmpty
             ? "No contacts yet.\nTap + to add your first contact."
             : "No matching contacts.\nTry another name or phone number."
         message.textAlignment = .center
@@ -51,11 +68,43 @@ class ContactListViewController: UIViewController {
         tableView.backgroundView = message
     }
 
+    private func showDeleteAlert(at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
+        let contact = model.getContact(index: indexPath)
+        let alert = UIAlertController(
+            title: "Delete contact?",
+            message: "Delete \(contact.fullName)?",
+            preferredStyle: .alert
+        )
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            completion(false)
+        }
+        let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
+            guard let self else {
+                completion(false)
+                return
+            }
+            
+            guard let row = self.model.filterContacts.firstIndex(where: { $0.id == contact.id }) else {
+                completion(false)
+                return
+            }
+            self.model.deleteContact(id: contact.id)
+            self.model.filterContacts(with: self.searchBar.text ?? "")
+            self.tableView.deleteRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
+            self.updateEmptyState()
+            completion(true)
+        }
+
+        alert.addAction(cancelAction)
+        alert.addAction(deleteAction)
+        present(alert, animated: true)
+    }
+
     @objc private func addContact() {
         view.endEditing(true)
         let controller = ContactFormViewController()
-        controller.delegate = self
-        present(UINavigationController(rootViewController: controller), animated: true)
+        contactCountBeforeForm = contacts.count
+        navigationController?.pushViewController(controller, animated: true)
     }
 }
 
@@ -80,25 +129,17 @@ extension ContactListViewController: UITableViewDataSource {
 extension ContactListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        // Capturamos el contacto, no la posición en una lista que puede estar filtrada.
-        let contact = model.getContact(index: indexPath)
-        let delete = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completion in
-            completion(false)
-            guard let self else { return }
-            let alert = UIAlertController(
-                title: "Delete contact?",
-                message: "Delete \(contact.fullName)?",
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-            alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
-                self?.model.deleteContact(id: contact.id)
-                self?.updateContacts()
-            })
-            self.present(alert, animated: true)
+        let deleteContact = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completion in
+            guard let self else {
+                completion(false)
+                return
+            }
+            self.showDeleteAlert(at: indexPath, completion: completion)
         }
-        let configuration = UISwipeActionsConfiguration(actions: [delete])
-        configuration.performsFirstActionWithFullSwipe = false
+        deleteContact.image = UIImage(systemName: "trash")
+
+        let configuration = UISwipeActionsConfiguration(actions: [deleteContact])
+        configuration.performsFirstActionWithFullSwipe = true
         return configuration
     }
 }
@@ -112,14 +153,5 @@ extension ContactListViewController: UISearchBarDelegate {
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
-    }
-}
-
-extension ContactListViewController: ContactFormViewControllerDelegate {
-    func contactFormViewController(_ controller: ContactFormViewController, didSave contact: ContactModel) {
-        model.addContact(contact)
-        searchBar.text = ""
-        updateContacts()
-        controller.dismiss(animated: true)
     }
 }

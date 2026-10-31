@@ -1,30 +1,52 @@
+//
+//  ContactListModel.swift
+//  ContactsManager
+//
+//  Created by Daniel Esteban Alcantara on 31/10/26.
+//
+
 import Foundation
 import UIKit
 
-// Conserva la lista completa; buscar nunca modifica los contactos originales.
+struct ContactModel {
+    let id = UUID()
+    let firstName: String
+    let lastName: String
+    let phoneNumber: String
+
+    var fullName: String {
+        [firstName, lastName].filter { !$0.isEmpty }.joined(separator: " ")
+    }
+}
+
+// Lista compartida entre pantallas, como los favoritos en BobEsponja.
+var contacts: [ContactModel] = [
+    ContactModel(firstName: "Alejandro", lastName: "Ramírez", phoneNumber: "5512345678"),
+    ContactModel(firstName: "Valentina", lastName: "Torres", phoneNumber: "5587654321"),
+    ContactModel(firstName: "Sebastián", lastName: "Morales", phoneNumber: "5543218765"),
+    ContactModel(firstName: "Camila", lastName: "Herrera", phoneNumber: "5598761234"),
+    ContactModel(firstName: "Diego", lastName: "Fernández", phoneNumber: "5534567890"),
+    ContactModel(firstName: "Isabella", lastName: "Castro", phoneNumber: "5578901234"),
+    ContactModel(firstName: "Mateo", lastName: "Vargas", phoneNumber: "5523456789"),
+    ContactModel(firstName: "Renata", lastName: "Mendoza", phoneNumber: "5567894321"),
+    ContactModel(firstName: "Daniel", lastName: "Ortega", phoneNumber: "5556789012"),
+    ContactModel(firstName: "Sofía", lastName: "Navarro", phoneNumber: "5545671238")
+]
+
 class ContactListModel {
-    private(set) var contacts: [ContactModel] = []
     private(set) var filterContacts: [ContactModel] = []
 
     init() {
-        let initialContacts = [
-            ContactModel(firstName: "Alejandro", lastName: "Ramírez", phoneNumber: "5512345678"),
-            ContactModel(firstName: "Valentina", lastName: "Torres", phoneNumber: "5587654321"),
-            ContactModel(firstName: "Sebastián", lastName: "Morales", phoneNumber: "5543218765"),
-            ContactModel(firstName: "Camila", lastName: "Herrera", phoneNumber: "5598761234"),
-            ContactModel(firstName: "Diego", lastName: "Fernández", phoneNumber: "5534567890"),
-            ContactModel(firstName: "Isabella", lastName: "Castro", phoneNumber: "5578901234"),
-            ContactModel(firstName: "Mateo", lastName: "Vargas", phoneNumber: "5523456789"),
-            ContactModel(firstName: "Renata", lastName: "Mendoza", phoneNumber: "5567894321"),
-            ContactModel(firstName: "Daniel", lastName: "Ortega", phoneNumber: "5556789012"),
-            ContactModel(firstName: "Sofía", lastName: "Navarro", phoneNumber: "5545671238")
-        ]
-        initialContacts.forEach { addContact($0) }
+        sortContacts()
         filterContacts(with: "")
     }
 
     func addContact(_ contact: ContactModel) {
         contacts.append(contact)
+        sortContacts()
+    }
+
+    private func sortContacts() {
         contacts.sort {
             let firstNameOrder = $0.firstName.localizedCaseInsensitiveCompare($1.firstName)
             if firstNameOrder == .orderedSame {
