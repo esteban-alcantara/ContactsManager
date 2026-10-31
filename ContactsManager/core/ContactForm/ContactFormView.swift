@@ -1,0 +1,72 @@
+import UIKit
+
+// Esta vista sólo presenta los campos. La validación está en ContactFormModel.
+class ContactFormView: UIView {
+    let firstNameTextField = UITextField()
+    let lastNameTextField = UITextField()
+    let phoneNumberTextField = UITextField()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setUpView()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setUpView()
+    }
+
+    private func setUpView() {
+        backgroundColor = .systemBackground
+        let scrollView = UIScrollView()
+        scrollView.keyboardDismissMode = .interactive
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(scrollView)
+
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 24
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(stack)
+
+        configure(firstNameTextField, title: "First name (required)", contentType: .givenName, in: stack)
+        configure(lastNameTextField, title: "Last name (optional)", contentType: .familyName, in: stack)
+        configure(phoneNumberTextField, title: "Phone number (required)", contentType: .telephoneNumber, in: stack)
+        phoneNumberTextField.keyboardType = .phonePad
+        firstNameTextField.returnKeyType = .next
+        lastNameTextField.returnKeyType = .next
+
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: keyboardLayoutGuide.topAnchor),
+            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 24),
+            stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 20),
+            stack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -20),
+            stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -24),
+            stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -40)
+        ])
+    }
+
+    private func configure(_ textField: UITextField, title: String,
+                           contentType: UITextContentType, in stack: UIStackView) {
+        let label = UILabel()
+        label.text = title
+        label.font = .preferredFont(forTextStyle: .subheadline)
+        label.adjustsFontForContentSizeCategory = true
+        label.numberOfLines = 0
+        textField.borderStyle = .roundedRect
+        textField.font = .preferredFont(forTextStyle: .body)
+        textField.adjustsFontForContentSizeCategory = true
+        textField.textContentType = contentType
+        textField.autocapitalizationType = .words
+        textField.autocorrectionType = .no
+        textField.accessibilityLabel = title
+        textField.heightAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
+        let fieldStack = UIStackView(arrangedSubviews: [label, textField])
+        fieldStack.axis = .vertical
+        fieldStack.spacing = 8
+        stack.addArrangedSubview(fieldStack)
+    }
+}
