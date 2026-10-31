@@ -17,9 +17,12 @@ class ContactListTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         selectionStyle = .none
+        
         contactImageView.image = UIImage(systemName: "person.crop.circle.fill")
         contactImageView.tintColor = .systemBlue
+        
         nameLabel.adjustsFontForContentSizeCategory = true
+        
         phoneLabel.adjustsFontForContentSizeCategory = true
         phoneLabel.textColor = .secondaryLabel
     }

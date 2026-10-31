@@ -19,7 +19,13 @@ struct ContactModel {
     }
 }
 
-// Lista compartida entre pantallas, como los favoritos en BobEsponja.
+/*
+var contacts: [ContactModel] = [
+    ContactModel(firstName: "Alejandro", lastName: "Ramírez", phoneNumber: "5512345678")
+]
+ 
+*/
+ 
 var contacts: [ContactModel] = [
     ContactModel(firstName: "Alejandro", lastName: "Ramírez", phoneNumber: "5512345678"),
     ContactModel(firstName: "Valentina", lastName: "Torres", phoneNumber: "5587654321"),
@@ -32,28 +38,17 @@ var contacts: [ContactModel] = [
     ContactModel(firstName: "Daniel", lastName: "Ortega", phoneNumber: "5556789012"),
     ContactModel(firstName: "Sofía", lastName: "Navarro", phoneNumber: "5545671238")
 ]
+ 
 
 class ContactListModel {
     private(set) var filterContacts: [ContactModel] = []
 
     init() {
-        sortContacts()
         filterContacts(with: "")
     }
 
     func addContact(_ contact: ContactModel) {
         contacts.append(contact)
-        sortContacts()
-    }
-
-    private func sortContacts() {
-        contacts.sort {
-            let firstNameOrder = $0.firstName.localizedCaseInsensitiveCompare($1.firstName)
-            if firstNameOrder == .orderedSame {
-                return $0.lastName.localizedCaseInsensitiveCompare($1.lastName) == .orderedAscending
-            }
-            return firstNameOrder == .orderedAscending
-        }
     }
 
     func deleteContact(id: UUID) {

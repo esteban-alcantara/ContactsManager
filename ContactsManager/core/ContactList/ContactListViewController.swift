@@ -9,6 +9,7 @@
 import UIKit
 
 class ContactListViewController: UIViewController {
+    
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
 
@@ -16,11 +17,14 @@ class ContactListViewController: UIViewController {
     private var contactCountBeforeForm: Int?
 
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         title = "Contacts"
+        
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .add, target: self, action: #selector(addContact)
         )
+        
         searchBar.delegate = self
         setUpTableView()
     }
@@ -46,19 +50,20 @@ class ContactListViewController: UIViewController {
     }
 
     private func updateContacts() {
+        orderContects()
         model.filterContacts(with: searchBar.text ?? "")
         tableView.reloadData()
-        updateEmptyState()
+        updateEmptyContacts()
     }
 
-    private func updateEmptyState() {
+    private func updateEmptyContacts() {
         guard model.filterContacts.isEmpty else {
             tableView.backgroundView = nil
             return
         }
         let message = UILabel()
         message.text = contacts.isEmpty
-            ? "No contacts yet.\nTap + to add your first contact."
+            ? "No contacts yet.\nTap + to add a contact."
             : "No matching contacts.\nTry another name or phone number."
         message.textAlignment = .center
         message.numberOfLines = 0
@@ -91,7 +96,7 @@ class ContactListViewController: UIViewController {
             self.model.deleteContact(id: contact.id)
             self.model.filterContacts(with: self.searchBar.text ?? "")
             self.tableView.deleteRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
-            self.updateEmptyState()
+            self.updateEmptyContacts()
             completion(true)
         }
 
@@ -99,12 +104,18 @@ class ContactListViewController: UIViewController {
         alert.addAction(deleteAction)
         present(alert, animated: true)
     }
+    
+    private func orderContects() {
+        contacts.sort {
+            $0.fullName.localizedCaseInsensitiveCompare($1.fullName) == .orderedAscending
+        }
+    }
 
     @objc private func addContact() {
         view.endEditing(true)
-        let controller = ContactFormViewController()
+        let ContactFormViewController = ContactFormViewController()
         contactCountBeforeForm = contacts.count
-        navigationController?.pushViewController(controller, animated: true)
+        navigationController?.pushViewController(ContactFormViewController, animated: true)
     }
 }
 
@@ -127,8 +138,8 @@ extension ContactListViewController: UITableViewDataSource {
 }
 
 extension ContactListViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView,
-                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteContact = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completion in
             guard let self else {
                 completion(false)
@@ -148,7 +159,7 @@ extension ContactListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         model.filterContacts(with: searchText)
         tableView.reloadData()
-        updateEmptyState()
+        updateEmptyContacts()
     }
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {

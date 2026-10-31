@@ -9,6 +9,7 @@ import UIKit
 
 // Esta vista sólo presenta los campos. La validación está en ContactFormModel.
 class ContactFormView: UIView {
+    
     let firstNameTextField = UITextField()
     let lastNameTextField = UITextField()
     let phoneNumberTextField = UITextField()
@@ -27,16 +28,15 @@ class ContactFormView: UIView {
 
     private func setUpView() {
         backgroundColor = .systemBackground
-        var buttonConfiguration = UIButton.Configuration.filled()
-        buttonConfiguration.title = "Save"
-        buttonConfiguration.cornerStyle = .capsule
-        saveButton.configuration = buttonConfiguration
+        
+        saveButton.configuration = .filled()
+        saveButton.configuration?.title = "Save"
+        saveButton.configuration?.cornerStyle = .capsule
         saveButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(saveButton)
 
-        var cancelConfiguration = UIButton.Configuration.plain()
-        cancelConfiguration.title = "Cancel"
-        cancelButton.configuration = cancelConfiguration
+        cancelButton.configuration = .plain()
+        cancelButton.configuration?.title = "Cancel"
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(cancelButton)
 
@@ -54,6 +54,7 @@ class ContactFormView: UIView {
         configure(firstNameTextField, title: "First name", contentType: .givenName, in: stack)
         configure(lastNameTextField, title: "Last name", contentType: .familyName, in: stack)
         configure(phoneNumberTextField, title: "Phone number", contentType: .telephoneNumber, in: stack)
+        
         phoneNumberTextField.keyboardType = .phonePad
         firstNameTextField.returnKeyType = .next
         lastNameTextField.returnKeyType = .next

@@ -13,12 +13,9 @@ class ContactFormViewController: UIViewController {
     private let model = ContactFormModel()
     private let formView = ContactFormView()
 
-    override func loadView() {
-        view = formView
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
+        view = formView
         title = "New Contact"
         formView.cancelButton.addTarget(self, action: #selector(cancel), for: .touchUpInside)
         formView.saveButton.addTarget(self, action: #selector(save), for: .touchUpInside)
@@ -29,6 +26,8 @@ class ContactFormViewController: UIViewController {
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
     }
+    
+
 
     @objc private func hideKeyboard(_ gesture: UITapGestureRecognizer) {
         let fields = [formView.firstNameTextField, formView.lastNameTextField, formView.phoneNumberTextField]
@@ -45,21 +44,37 @@ class ContactFormViewController: UIViewController {
     }
 
     @objc private func save() {
-        do {
-            let contact = try model.createContact(
-                firstName: formView.firstNameTextField.text ?? "",
-                lastName: formView.lastNameTextField.text ?? "",
-                phoneNumber: formView.phoneNumberTextField.text ?? ""
-            )
-            ContactListModel().addContact(contact)
-            navigationController?.popViewController(animated: true)
-        } catch {
-            let alert = UIAlertController(title: "Error", message: error.localizedDescription,
-                                          preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
+        
+        let firstName = (formView.firstNameTextField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let lastName = (formView.lastNameTextField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let phoneNumber = (formView.phoneNumberTextField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if firstName.isEmpty {
+            showValidationAlert(message: "Enter a first name.")
+            return
         }
+
+        if phoneNumber.isEmpty {
+            showValidationAlert(message: "Enter a phone number.")
+            return
+        }
+
+        let contact = model.createContact(
+            firstName: firstName,
+            lastName: lastName,
+            phoneNumber: phoneNumber
+        )
+        ContactListModel().addContact(contact)
+        
+        navigationController?.popViewController(animated: true)
     }
+
+    private func showValidationAlert(message: String) {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
 }
 
 extension ContactFormViewController: UITextFieldDelegate {
